@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - ShopHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">🛍️ ShopHub</div>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('add_product') }}">Add Product</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a> / 
+            <a href="{{ url_for('index') }}?category={{ product.category }}">{{ product.category }}</a> / 
+            <span>{{ product.name }}</span>
+        </div>
+
+        <div class="product-detail">
+            <div class="product-detail-image">
+                <img src="{{ product.image_url or 'https://via.placeholder.com/600x400?text=No+Image' }}" 
+                     alt="{{ product.name }}">
+            </div>
+            <div class="product-detail-info">
+                <h1>{{ product.name }}</h1>
+                <div class="product-meta">
+                    <span class="category-badge">{{ product.category }}</span>
+                    <div class="rating-display">
+                        <span class="stars">⭐</span>
+                        <span class="rating-value">{{ "%.1f"|format(product.rating) }}</span>
+                        <span class="reviews-count">({{ product.reviews_count }} reviews)</span>
+                    </div>
+                </div>
+                <div class="price-display">
+                    <span class="current-price">${{ "%.2f"|format(product.price) }}</span>
+                    <span class="stock-status {% if product.stock_quantity > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+                        {% if product.stock_quantity > 0 %}
+                            ✓ In Stock ({{ product.stock_quantity }} available)
+                        {% else %}
+                            ✗ Out of Stock
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="product-description-full">
+                    <h3>Description</h3>
+                    <p>{{ product.description }}</p>
+                </div>
+                <div class="product-actions-detail">
+                    <button class="btn btn-primary btn-lg" 
+                            {% if product.stock_quantity <= 0 %}disabled{% endif %}>
+                        Add to Cart
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Continue Shopping</a>
+                </div>
+                <div class="product-details-extra">
+                    <p><strong>Product ID:</strong> #{{ product.id }}</p>
+                    <p><strong>Added:</strong> {{ product.created_at }}</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ShopHub. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
