@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Product Listing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">🛍️ ShopHub</div>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('add_product') }}">Add Product</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Our Products</h1>
+            <p>Discover amazing products at great prices</p>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="search-filter">
+            <form method="GET" action="{{ url_for('index') }}" class="search-form">
+                <input type="text" name="search" placeholder="Search products..." value="{{ search_query }}">
+                <button type="submit">Search</button>
+            </form>
+            <div class="filter-section">
+                <select name="category" onchange="window.location.href=this.value ? 
+                    '{{ url_for('index') }}?category=' + this.value : '{{ url_for('index') }}'">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <a href="{{ url_for('index') }}" class="clear-filter">Clear Filters</a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Product Grid -->
+        <div class="product-grid">
+            {% for product in products.items %}
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="{{ product.image_url or 'https://via.placeholder.com/400x300?text=No+Image' }}" 
+                             alt="{{ product.name }}">
+                        {% if product.stock_quantity < 10 %}
+                            <span class="stock-badge low-stock">Low Stock</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">{{ product.name }}</h3>
+                        <p class="product-category">{{ product.category }}</p>
+                        <div class="product-rating">
+                            <span class="stars">⭐</span>
+                            <span class="rating-value">{{ "%.1f"|format(product.rating) }}</span>
+                            <span class="reviews-count">({{ product.reviews_count }})</span>
+                        </div>
+                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                        <div class="product-footer">
+                            <span class="product-price">${{ "%.2f"|format(product.price) }}</span>
+                            <div class="product-actions">
+                                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-view">View</a>
+                                <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-delete" onclick="return confirm('Delete this product?')">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if products.pages > 1 %}
+            <div class="pagination">
+                {% if products.has_prev %}
+                    <a href="{{ url_for('index', page=products.prev_num, category=current_category, search=search_query) }}">&laquo; Previous</a>
+                {% endif %}
+                
+                {% for page_num in products.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == products.page %}
+                            <span class="active">{{ page_num }}</span>
+                        {% else %}
+                            <a href="{{ url_for('index', page=page_num, category=current_category, search=search_query) }}">{{ page_num }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span class="dots">…</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if products.has_next %}
+                    <a href="{{ url_for('index', page=products.next_num, category=current_category, search=search_query) }}">Next &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ShopHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
